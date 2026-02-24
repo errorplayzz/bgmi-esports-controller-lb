@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tournament Control Center</title>
+    <link rel="stylesheet" href="/control/control.css">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container" style="display: none;">
+        <div class="login-box">
+            <h1>🎮 CONTROL CENTER</h1>
+            <p>Admin Authentication Required</p>
+            <input type="password" id="passwordInput" placeholder="Enter admin password" autofocus>
+            <button onclick="login()">Login</button>
+            <p id="loginError" class="error"></p>
+        </div>
+    </div>
+
+    <!-- Main Control Panel -->
+    <div id="controlPanel" class="control-panel">
+        <!-- Header -->
+        <header class="control-header">
+            <div class="header-left">
+                <h1>🎮 TOURNAMENT CONTROL CENTER</h1>
+                <span id="tournamentName" class="tournament-name"></span>
+            </div>
+            <div class="header-right">
+                <span class="status-indicator">
+                    <span class="status-dot" id="connectionStatus"></span>
+                    <span id="statusText">Connecting...</span>
+                </span>
+                <button class="btn-refresh" onclick="refreshData()">🔄 Refresh Data</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="control-content">
+            <!-- Left Column: Match & Display Controls -->
+            <div class="control-section">
+                <div class="section-card">
+                    <h2>📊 Match Selector</h2>
+                    <div class="button-group">
+                        <button class="btn-match active" data-match="match1" onclick="selectMatch('match1')">
+                            Match 1
+                        </button>
+                        <button class="btn-match" data-match="match2" onclick="selectMatch('match2')">
+                            Match 2
+                        </button>
+                        <button class="btn-match" data-match="match3" onclick="selectMatch('match3')">
+                            Match 3
+                        </button>
+                        <button class="btn-match" data-match="overall" onclick="selectMatch('overall')">
+                            Overall Standings
+                        </button>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h2>🎯 Display Mode</h2>
+                    <div class="button-group">
+                        <button class="btn-display" data-mode="top3" onclick="selectDisplayMode('top3')">
+                            Top 3
+                        </button>
+                        <button class="btn-display" data-mode="top7" onclick="selectDisplayMode('top7')">
+                            Top 7
+                        </button>
+                        <button class="btn-display active" data-mode="top15" onclick="selectDisplayMode('top15')">
+                            Top 15
+                        </button>
+                    </div>
+                    <div class="custom-count">
+                        <label>Custom Count:</label>
+                        <input type="number" id="customCount" min="1" max="25" value="15">
+                        <button class="btn-small" onclick="applyCustomCount()">Apply</button>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h2>🎭 Reveal Mode</h2>
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autoRevealToggle" checked onchange="toggleRevealMode()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span id="revealModeLabel">Auto Reveal (ON)</span>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h2>⚡ Special Actions</h2>
+                    <div class="action-buttons">
+                        <button class="btn-action btn-purple" onclick="setupPodium()">
+                            🎬 Setup Podium
+                        </button>
+                        <button class="btn-action btn-bronze" onclick="showPodium(3)">
+                            🥉 Show 3rd Place
+                        </button>
+                        <button class="btn-action btn-silver" onclick="showPodium(2)">
+                            🥈 Show 2nd Place
+                        </button>
+                        <button class="btn-action btn-gold" onclick="showPodium(1)">
+                            🥇 Show 1st Place
+                        </button>
+                        <button class="btn-action btn-red" onclick="hideAll()">
+                            👁️ Hide All
+                        </button>
+                        <button class="btn-action btn-blue" onclick="resetReveal()">
+                            🔄 Reset Reveal
+                        </button>
+                        <button class="btn-action btn-purple" id="lockBtn" onclick="toggleLock()">
+                            🔓 Lock Rankings
+                        </button>
+                        <button class="btn-action btn-green" onclick="toggleSponsor()">
+                            📢 Toggle Sponsor
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle Column: Manual Reveal Controls -->
+            <div class="control-section">
+                <div class="section-card manual-reveal-section">
+                    <h2>🎯 Manual Rank Reveal</h2>
+                    <p class="hint">Click to reveal teams one by one (only in Manual mode)</p>
+                    <button class="btn-unselect-all" onclick="resetReveal()">🔄 Unselect All</button>
+                    <div class="rank-buttons" id="rankButtons">
+                        <!-- Rank buttons will be generated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Live Preview & Data -->
+            <div class="control-section">
+                <div class="section-card">
+                    <h2>📺 Live Preview</h2>
+                    <div class="preview-info">
+                        <div class="preview-item">
+                            <span class="preview-label">Current View:</span>
+                            <span class="preview-value" id="previewMatch">Match 1</span>
+                        </div>
+                        <div class="preview-item">
+                            <span class="preview-label">Display Mode:</span>
+                            <span class="preview-value" id="previewDisplay">Top 15</span>
+                        </div>
+                        <div class="preview-item">
+                            <span class="preview-label">Reveal Mode:</span>
+                            <span class="preview-value" id="previewReveal">Auto</span>
+                        </div>
+                        <div class="preview-item">
+                            <span class="preview-label">Revealed Ranks:</span>
+                            <span class="preview-value" id="previewRevealed">All visible</span>
+                        </div>
+                    </div>
+                    <button class="btn-open-display" onclick="openDisplayScreen()">
+                        🖥️ Open Display Screen
+                    </button>
+                </div>
+
+                <div class="section-card">
+                    <div class="leaderboard-header">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <h2>📋 Current Leaderboard</h2>
+                            <span id="lastUpdatedTime" style="font-size:11px;color:#888;"></span>
+                        </div>
+                        <div class="leaderboard-controls">
+                            <button class="btn-refresh-display" onclick="refreshDisplay()">
+                                🔄 Refresh Display
+                            </button>
+                            <div class="toggle-container-small">
+                                <label class="toggle-switch-small">
+                                    <input type="checkbox" id="autoUpdateToggle" checked onchange="toggleAutoUpdate()">
+                                    <span class="toggle-slider-small"></span>
+                                </label>
+                                <span id="autoUpdateLabel">🔄 Auto Update</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mini-leaderboard" id="miniLeaderboard">
+                        <!-- Mini leaderboard will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/control/control.js"></script>
+</body>
+</html>

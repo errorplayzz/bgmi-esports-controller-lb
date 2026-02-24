@@ -1,0 +1,29 @@
+{
+  "name": "esports-tournament-leaderboard",
+  "version": "1.0.0",
+  "description": "Professional BGMI Esports Tournament Leaderboard System with Real-time Updates",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js"
+  },
+  "keywords": [
+    "esports",
+    "tournament",
+    "leaderboard",
+    "bgmi",
+    "websocket"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.6.1",
+    "googleapis": "^118.0.0",
+    "dotenv": "^16.0.3",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

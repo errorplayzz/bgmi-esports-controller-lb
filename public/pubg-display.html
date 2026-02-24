@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PUBG Tournament - Professional Leaderboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Bebas+Neue&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --orange-primary: #FF8C00;
+            --orange-dark: #E67E00;
+            --orange-glow: rgba(255, 140, 0, 0.6);
+            --white: #FFFFFF;
+            --dark: #1a1a1a;
+            --gold: #FFD700;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: url('../display/leaderboard-bg.png') center center / cover no-repeat fixed;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(0, 0, 0, 0.65),
+                rgba(0, 0, 0, 0.85)
+            );
+            z-index: 0;
+        }
+
+        /* Subtle Background Particles */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.4;
+        }
+
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, 
+                rgba(255, 140, 0, 0.7) 0%, 
+                rgba(255, 100, 0, 0.4) 50%,
+                transparent 100%);
+            border-radius: 50%;
+            animation: float linear infinite;
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.4);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.5;
+            }
+            90% {
+                opacity: 0.3;
+            }
+            100% {
+                transform: translateY(-10vh) translateX(var(--drift)) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            padding: 20px 60px;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+
+
+        /* Leaderboard Section */
+        .leaderboard-section {
+            width: 100%;
+            max-width: 1700px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow: hidden;
+            height: calc(100vh - 40px);
+            background: radial-gradient(
+                ellipse at center,
+                rgba(40, 30, 10, 0.4) 0%,
+                transparent 70%
+            );
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 
+                0 0 80px rgba(255, 180, 50, 0.08),
+                inset 0 0 100px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Compact leaderboard section for Top 7 */
+        .leaderboard-section.compact-mode {
+            padding: 12px 20px;
+            gap: 8px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+            padding: 5px 0;
+            filter: drop-shadow(0 0 40px rgba(255, 180, 40, 0.2));
+        }
+
+        /* Compact header for Top 7 */
+        .compact-mode .header {
+            margin-bottom: 5px;
+            padding: 0;
+        }
+
+        .title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3.2em;
+            letter-spacing: 12px;
+            text-transform: uppercase;
+            background: linear-gradient(
+                90deg,
+                #ffd76a,
+                #ffb300,
+                #ff8c00,
+                #ffd76a
+            );
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5))
+                    drop-shadow(0 0 8px rgba(255, 220, 100, 0.8))
+                    drop-shadow(0 0 16px rgba(255, 200, 80, 0.7))
+                    drop-shadow(0 0 28px rgba(255, 180, 60, 0.6))
+                    drop-shadow(0 0 45px rgba(255, 160, 40, 0.5))
+                    drop-shadow(0 0 70px rgba(255, 140, 0, 0.3));
+            margin-bottom: 5px;
+            position: relative;
+        }
+
+        /* Compact title for Top 7 */
+        .compact-mode .title {
+            font-size: 2.5em;
+            letter-spacing: 8px;
+            margin-bottom: 2px;
+        }
+
+        .subtitle {
+            font-family: 'Teko', sans-serif;
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #ffd76a;
+            text-align: center;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            text-shadow: 
+                0 1px 2px rgba(0, 0, 0, 0.6),
+                0 0 8px rgba(255, 220, 100, 0.9),
+                0 0 16px rgba(255, 200, 80, 0.7),
+                0 0 28px rgba(255, 180, 60, 0.5),
+                0 0 45px rgba(255, 160, 40, 0.3);
+        }
+
+        /* Compact subtitle for Top 7 */
+        .compact-mode .subtitle {
+            font-size: 1.3em;
+            letter-spacing: 3px;
+        }
+
+
+
+        /* Table Header */
+        .table-header {
+            display: grid;
+            grid-template-columns: 110px 1fr 180px 180px 200px;
+            gap: 12px;
+            padding: 0 10px;
+            margin-bottom: 15px;
+        }
+
+        /* Compact table header for Top 7 */
+        .compact-mode .table-header {
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .header-cell {
+            background: linear-gradient(
+                135deg,
+                #ffb800 0%,
+                #ff9500 50%,
+                #ff8c00 75%,
+                #ffb300 100%
+            );
+            padding: 15px 20px;
+            font-family: 'Teko', sans-serif;
+            font-size: 1.6em;
+            font-weight: 700;
+            color: #111;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 100%, 0 100%);
+            box-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.3),
+                0 6px 12px rgba(255, 150, 0, 0.6),
+                0 10px 20px rgba(255, 150, 0, 0.4),
+                inset 0 1px 0 rgba(255, 240, 180, 0.6),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+                inset 0 0 20px rgba(255, 220, 120, 0.4);
+            border: 2px solid rgba(255, 200, 100, 0.9);
+            text-shadow: 
+                0 1px 2px rgba(0, 0, 0, 0.4),
+                0 0 8px rgba(255, 255, 200, 0.3);
+            position: relative;
+        }
+
+        .header-cell::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            background: linear-gradient(
+                180deg,
+                rgba(255, 255, 255, 0.3) 0%,
+                transparent 100%
+            );
+            pointer-events: none;
+        }
+
+        /* Compact header cells for Top 7 */
+        .compact-mode .header-cell {
+            padding: 10px 15px;
+            font-size: 1.3em;
+        }
+
+        .header-cell:first-child {
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        }
+
+        /* Leaderboard Rows Container */
+        .rows-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 15px 10px 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Compact mode for Top 7 */
+        .rows-container.compact-mode {
+            gap: 0;
+            padding: 0 15px 5px 10px;
+        }
+
+        /* Row */
+        .row {
+            display: grid;
+            grid-template-columns: 110px 1fr 180px 180px 200px;
+            gap: 12px;
+            margin-bottom: 10px;
+            min-height: 70px;
+            animation: slideIn 0.6s ease-out backwards;
+            background: linear-gradient(
+                135deg,
+                rgba(45, 45, 45, 0.97) 0%,
+                rgba(28, 28, 28, 0.97) 50%,
+                rgba(35, 35, 35, 0.97) 100%
+            );
+            border-left: 6px solid #ffb300;
+            box-shadow:
+                0 2px 4px rgba(0, 0, 0, 0.3),
+                0 8px 16px rgba(0, 0, 0, 0.6),
+                0 16px 32px rgba(0, 0, 0, 0.8),
+                inset 0 1px 0 rgba(255, 200, 100, 0.15),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+                inset 2px 0 8px rgba(255, 180, 0, 0.12),
+                0 0 40px rgba(255, 180, 0, 0.08);
+            transition: all 0.3s ease;
+            padding: 8px 0;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Compact row styling for Top 7 */
+        .compact-mode .row {
+            min-height: 48px;
+            margin-bottom: 4px;
+            padding: 4px 0;
+            gap: 8px;
+        }
+
+        .row::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(
+                180deg,
+                rgba(255, 255, 255, 0.08) 0%,
+                transparent 100%
+            );
+            pointer-events: none;
+        }
+
+        .row::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -100%;
+            width: 50%;
+            height: 200%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 220, 150, 0.08),
+                transparent
+            );
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .row:hover {
+            transform: translateY(-3px);
+            box-shadow:
+                0 4px 8px rgba(0, 0, 0, 0.4),
+                0 12px 24px rgba(0, 0, 0, 0.7),
+                0 20px 40px rgba(0, 0, 0, 0.9),
+                inset 0 1px 0 rgba(255, 220, 120, 0.25),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.6),
+                inset 2px 0 12px rgba(255, 200, 80, 0.18),
+                0 0 50px rgba(255, 180, 0, 0.15);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Rank Box */
+        .rank-box {
+            background: linear-gradient(
+                135deg,
+                #ffb300 0%,
+                #ff9500 50%,
+                #ff8c00 100%
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.8em;
+            font-weight: 900;
+            color: #111;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+            box-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.3),
+                0 6px 12px rgba(255, 150, 0, 0.5),
+                0 10px 20px rgba(255, 150, 0, 0.3),
+                inset 0 1px 0 rgba(255, 240, 180, 0.6),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+                inset 0 0 20px rgba(255, 220, 120, 0.4);
+            border: 2px solid rgba(255, 200, 100, 0.8);
+            text-shadow: 
+                0 1px 2px rgba(0, 0, 0, 0.4),
+                0 0 8px rgba(255, 255, 200, 0.3);
+            position: relative;
+        }
+
+        .rank-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            background: linear-gradient(
+                180deg,
+                rgba(255, 255, 255, 0.3) 0%,
+                transparent 100%
+            );
+            pointer-events: none;
+        }
+
+        .rank-box::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            pointer-events: none;
+        }
+
+        /* Compact rank boxes for Top 7 */
+        .compact-mode .rank-box {
+            font-size: 2.2em;
+        }
+
+        /* Team Name Box */
+        .team-box {
+            background: linear-gradient(
+                135deg, 
+                #FFFFFF 0%,
+                #F8F8F8 50%,
+                #F0F0F0 100%
+            );
+            display: flex;
+            align-items: center;
+            padding: 0 25px;
+            font-family: 'Teko', sans-serif;
+            font-size: 2em;
+            font-weight: 700;
+            color: #000000;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 100%, 0 100%);
+            box-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.25),
+                0 6px 12px rgba(0, 0, 0, 0.4),
+                0 10px 20px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 1),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.15),
+                inset 0 0 20px rgba(255, 250, 240, 0.5);
+            border: 2px solid rgba(255, 200, 100, 0.5);
+            text-shadow: 
+                0 1px 0 rgba(255, 255, 255, 0.8),
+                0 2px 3px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .team-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 30%;
+            background: linear-gradient(
+                180deg,
+                rgba(255, 255, 255, 0.4) 0%,
+                transparent 100%
+            );
+            pointer-events: none;
+        }
+        /* Compact mode team name */
+        .compact-mode .team-box {
+            font-size: 1.5em;
+            padding: 0 18px;
+            letter-spacing: 2px;
+        }
+        /* Stat Box */
+        .stat-box {
+            background: linear-gradient(
+                135deg,
+                #ffb800 0%,
+                #ff9500 50%,
+                #ff8c00 75%,
+                #ffb300 100%
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.4em;
+            font-weight: 900;
+            color: #111;
+            clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 100%, 0 100%);
+            box-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.3),
+                0 6px 12px rgba(255, 150, 0, 0.5),
+                0 10px 20px rgba(255, 150, 0, 0.3),
+                inset 0 1px 0 rgba(255, 240, 180, 0.5),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+                inset 0 0 20px rgba(255, 220, 120, 0.35);
+            text-shadow: 
+                0 1px 2px rgba(0, 0, 0, 0.4),
+                0 0 6px rgba(255, 255, 200, 0.2);
+            position: relative;
+        }
+
+        .stat-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 35%;
+            background: linear-gradient(
+                180deg,
+                rgba(255, 255, 255, 0.25) 0%,
+                transparent 100%
+            );
+            pointer-events: none;
+        }
+
+        /* Compact stat boxes for Top 7 */
+        .compact-mode .stat-box {
+            font-size: 1.9em;
+            padding: 0 10px;
+        }
+
+        /* Rank 1 Highlight - Gold */
+        .row.rank-1 .rank-box {
+            background: radial-gradient(
+                ellipse at center,
+                #ffe17a 0%,
+                #ffd76a 30%,
+                #ffb300 70%,
+                #ff9500 100%
+            );
+            box-shadow: 
+                0 0 15px rgba(255, 230, 120, 0.9),
+                0 0 30px rgba(255, 215, 80, 0.8),
+                0 0 50px rgba(255, 180, 40, 0.6),
+                0 6px 20px rgba(255, 150, 0, 0.7),
+                inset 0 2px 0 rgba(255, 255, 220, 0.7),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.4),
+                inset 0 0 30px rgba(255, 240, 180, 0.5);
+            color: #111;
+            animation: goldPulse 2.5s ease-in-out infinite;
+            border: 3px solid rgba(255, 230, 150, 1);
+        }
+
+        .row.rank-1 .rank-box::before {
+            background: linear-gradient(
+                180deg,
+                rgba(255, 255, 255, 0.5) 0%,
+                transparent 100%
+            );
+        }
+
+        @keyframes goldPulse {
+            0%, 100% {
+                box-shadow: 
+                    0 0 15px rgba(255, 230, 120, 0.9),
+                    0 0 30px rgba(255, 215, 80, 0.8),
+                    0 0 50px rgba(255, 180, 40, 0.6),
+                    0 6px 20px rgba(255, 150, 0, 0.7),
+                    inset 0 2px 0 rgba(255, 255, 220, 0.7),
+                    inset 0 -2px 0 rgba(0, 0, 0, 0.4),
+                    inset 0 0 30px rgba(255, 240, 180, 0.5);
+            }
+            50% {
+                box-shadow: 
+                    0 0 25px rgba(255, 230, 120, 1),
+                    0 0 45px rgba(255, 215, 80, 0.9),
+                    0 0 70px rgba(255, 180, 40, 0.7),
+                    0 8px 25px rgba(255, 150, 0, 0.8),
+                    inset 0 2px 0 rgba(255, 255, 220, 0.8),
+                    inset 0 -2px 0 rgba(0, 0, 0, 0.4),
+                    inset 0 0 35px rgba(255, 240, 180, 0.6);
+            }
+        }
+
+        /* Rank 2 Silver Highlight */
+        .row.rank-2 .rank-box {
+            background: radial-gradient(
+                ellipse at center,
+                #f0f0f0 0%,
+                #e0e0e0 30%,
+                #c0c0c0 70%,
+                #a8a8a8 100%
+            );
+            box-shadow: 
+                0 0 10px rgba(224, 224, 224, 0.9),
+                0 0 20px rgba(200, 200, 200, 0.7),
+                0 6px 18px rgba(160, 160, 160, 0.6),
+                inset 0 2px 0 rgba(255, 255, 255, 0.6),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.4),
+                inset 0 0 25px rgba(240, 240, 240, 0.4);
+            color: #111;
+            border: 3px solid rgba(220, 220, 220, 1);
+        }
+
+        .row.rank-2 .rank-box::before {
+            background: linear-gradient(
+                180deg,
+                rgba(255, 255, 255, 0.4) 0%,
+                transparent 100%
+            );
+        }
+
+        /* Rank 3 Bronze Highlight */
+        .row.rank-3 .rank-box {
+            background: radial-gradient(
+                ellipse at center,
+                #e09950 0%,
+                #d48a3a 30%,
+                #c07228 70%,
+                #a65c1a 100%
+            );
+            box-shadow: 
+                0 0 10px rgba(224, 153, 80, 0.8),
+                0 0 20px rgba(212, 138, 58, 0.7),
+                0 6px 18px rgba(166, 92, 26, 0.6),
+                inset 0 2px 0 rgba(255, 200, 150, 0.5),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.4),
+                inset 0 0 25px rgba(230, 160, 100, 0.35);
+            color: #111;
+            border: 3px solid rgba(220, 145, 70, 1);
+        }
+
+        .row.rank-3 .rank-box::before {
+            background: linear-gradient(
+                180deg,
+                rgba(255, 220, 180, 0.35) 0%,
+                transparent 100%
+            );
+        }
+
+        /* Scrollbar */
+        .rows-container::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        .rows-container::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            border: 2px solid rgba(255, 180, 0, 0.3);
+        }
+
+        .rows-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, 
+                #ffb300, 
+                #ff8c00);
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(255, 150, 0, 0.6);
+            border: 2px solid rgba(255, 180, 0, 0.7);
+        }
+
+        .rows-container::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, 
+                #ffd76a, 
+                #ffb300);
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.8);
+        }
+
+
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ffd700;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes zoomIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-30px); }
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Sponsor Banner */
+        .sponsor-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.95) 0%, rgba(20, 20, 20, 0.95) 50%, rgba(0, 0, 0, 0.95) 100%);
+            padding: 20px 0;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 900;
+            border-top: 3px solid #ffd700;
+            box-shadow: 0 -5px 30px rgba(255, 215, 0, 0.3);
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .sponsor-banner.active {
+            display: flex;
+        }
+
+        .sponsor-text {
+            font-family: 'Teko', sans-serif;
+            font-size: 2.5em;
+            color: #ffd700;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-right: 30px;
+        }
+
+        .sponsor-logo {
+            font-size: 3em;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        /* Rankings Locked Indicator */
+        .locked-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 51, 102, 0.95);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-family: 'Teko', sans-serif;
+            font-size: 1.8em;
+            font-weight: bold;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 20px rgba(255, 51, 102, 0.5);
+            z-index: 950;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .locked-indicator.active {
+            display: flex;
+        }
+
+        /* Responsive */
+        @media (max-width: 1366px) {
+            .container {
+                padding: 30px 40px;
+            }
+            
+            .title {
+                font-size: 4em;
+            }
+            
+            .character-section {
+                width: 30%;
+            }
+        }
+
+        /* ===== PODIUM KEYFRAMES ===== */
+        @keyframes cardRiseUp {
+            0%   { opacity: 0; transform: translateY(100px) scale(0.75); }
+            60%  { transform: translateY(-10px) scale(1.03); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes shimmer {
+            0%   { background-position: -200% center; }
+            100% { background-position:  200% center; }
+        }
+        @keyframes floatTrophy {
+            0%,100% { transform: translateY(0) rotate(-3deg); }
+            50%     { transform: translateY(-18px) rotate(3deg); }
+        }
+        @keyframes baseRise {
+            0%   { transform: scaleY(0); transform-origin: bottom; }
+            100% { transform: scaleY(1); transform-origin: bottom; }
+        }
+        @keyframes rankNumPop {
+            0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
+            70%  { transform: scale(1.2) rotate(5deg);  opacity: 1; }
+            100% { transform: scale(1) rotate(0deg);   opacity: 1; }
+        }
+        @keyframes cardGoldGlow {
+            0%,100% { box-shadow: 0 0 40px rgba(255,200,0,0.5), 0 0 80px rgba(255,160,0,0.25), inset 0 0 30px rgba(255,200,0,0.06); }
+            50%     { box-shadow: 0 0 70px rgba(255,200,0,0.9), 0 0 130px rgba(255,160,0,0.5), inset 0 0 40px rgba(255,200,0,0.12); }
+        }
+
+        /* ===== PODIUM OVERLAY — FULL REDESIGN with bg image ===== */
+        .podium-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: url('/display/podium-bg.png') center center / cover no-repeat;
+            display: none;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            z-index: 2000;
+            overflow: hidden;
+        }
+        .podium-overlay.active { display: flex; }
+
+        /* Dark vignette top so title pops */
+        .podium-overlay::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 55%;
+            background: linear-gradient(180deg, rgba(0,0,0,0.72) 0%, transparent 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Fog/haze at bottom to blend cards into stage */
+        .podium-overlay::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 30%;
+            background: linear-gradient(0deg, rgba(0,0,0,0.55) 0%, transparent 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* bg-glow div no longer needed but kept as empty */
+        .podium-bg-glow { display: none; }
+
+        .podium-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 22px;
+            margin-bottom: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .podium-trophy-icon {
+            font-size: 3.5em;
+            animation: floatTrophy 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 25px rgba(255,200,50,0.9)) drop-shadow(0 0 50px rgba(255,160,0,0.5));
+            margin-bottom: 4px;
+            line-height: 1;
+        }
+
+        .podium-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3.5em;
+            background: linear-gradient(90deg, #c8920a 0%, #ffd700 25%, #fff8e0 50%, #ffd700 75%, #c8920a 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 14px;
+            animation: shimmer 3s linear infinite;
+            filter: drop-shadow(0 4px 20px rgba(255,180,0,0.4));
+            line-height: 1;
+        }
+
+        .podium-subtitle {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.8em;
+            color: rgba(255,220,120,0.65);
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        /* Cards sit near the bottom, above the stage platform */
+        .podium-stage {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 20px;
+            position: absolute;
+            bottom: 6%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            width: 100%;
+            padding: 0 60px;
+        }
+
+        .podium-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(100px) scale(0.75);
+        }
+        .podium-card.visible {
+            animation: cardRiseUp 0.9s cubic-bezier(0.22,1,0.36,1) forwards;
+        }
+
+        .podium-card-inner {
+            border-radius: 18px;
+            padding: 22px 30px 26px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(18px) saturate(1.4);
+            -webkit-backdrop-filter: blur(18px) saturate(1.4);
+        }
+        .podium-card-inner::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -120%;
+            width: 70%; height: 100%;
+            background: linear-gradient(120deg, transparent 35%, rgba(255,255,255,0.07) 50%, transparent 65%);
+            animation: shimmer 2.8s linear infinite;
+        }
+
+        /* === GOLD — 1st === */
+        .podium-card.pos-1 .podium-card-inner {
+            min-width: 310px;
+            background: linear-gradient(160deg, rgba(60,40,0,0.82) 0%, rgba(40,25,0,0.88) 100%);
+            border: 1.5px solid rgba(255,215,0,0.9);
+            box-shadow: 0 0 40px rgba(255,200,0,0.5), 0 0 80px rgba(255,160,0,0.25), inset 0 0 30px rgba(255,200,0,0.06);
+            animation: cardGoldGlow 2.5s ease-in-out infinite;
+        }
+        .podium-card.pos-1 .podium-card-inner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 50% -10%, rgba(255,215,0,0.18) 0%, transparent 65%);
+            pointer-events: none;
+        }
+
+        /* === SILVER — 2nd === */
+        .podium-card.pos-2 .podium-card-inner {
+            min-width: 250px;
+            background: linear-gradient(160deg, rgba(20,22,30,0.84) 0%, rgba(28,30,45,0.88) 100%);
+            border: 1.5px solid rgba(180,180,200,0.7);
+            box-shadow: 0 0 25px rgba(180,180,210,0.2), 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .podium-card.pos-2 .podium-card-inner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 50% -10%, rgba(200,200,220,0.1) 0%, transparent 65%);
+            pointer-events: none;
+        }
+
+        /* === BRONZE — 3rd === */
+        .podium-card.pos-3 .podium-card-inner {
+            min-width: 230px;
+            background: linear-gradient(160deg, rgba(30,15,0,0.84) 0%, rgba(40,20,0,0.88) 100%);
+            border: 1.5px solid rgba(205,127,50,0.75);
+            box-shadow: 0 0 22px rgba(205,127,50,0.3), 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .podium-card.pos-3 .podium-card-inner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 50% -10%, rgba(205,127,50,0.12) 0%, transparent 65%);
+            pointer-events: none;
+        }
+
+        .podium-rank-badge {
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.7em;
+            position: relative;
+            z-index: 1;
+        }
+        .podium-card.pos-1 .podium-rank-badge {
+            width: 76px; height: 76px; font-size: 2em;
+            background: radial-gradient(circle, #ffe566 0%, #f0a000 55%, #a86800 100%);
+            box-shadow: 0 0 30px rgba(255,200,0,0.9), 0 0 70px rgba(255,160,0,0.45);
+            color: #2a1200;
+        }
+        .podium-card.pos-2 .podium-rank-badge {
+            background: radial-gradient(circle, #eeeef8 0%, #b0b0c8 55%, #78789a 100%);
+            box-shadow: 0 0 18px rgba(200,200,225,0.5);
+            color: #1a1a2a;
+        }
+        .podium-card.pos-3 .podium-rank-badge {
+            background: radial-gradient(circle, #f0a060 0%, #c07020 55%, #824010 100%);
+            box-shadow: 0 0 18px rgba(205,127,50,0.55);
+            color: #1e0800;
+        }
+
+        .podium-rank-label {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.78em;
+            font-weight: 700;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        .podium-card.pos-1 .podium-rank-label { color: rgba(255,220,80,0.85); }
+        .podium-card.pos-2 .podium-rank-label { color: rgba(200,200,220,0.7); }
+        .podium-card.pos-3 .podium-rank-label { color: rgba(210,140,60,0.75); }
+
+        .podium-team-name {
+            font-family: 'Bebas Neue', sans-serif;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+            line-height: 1;
+        }
+        .podium-card.pos-1 .podium-team-name {
+            font-size: 3em;
+            letter-spacing: 5px;
+            background: linear-gradient(180deg, #ffffff 0%, #ffe566 55%, #ffa500 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 2px 12px rgba(255,200,0,0.4));
+        }
+        .podium-card.pos-2 .podium-team-name { font-size: 2.1em; letter-spacing: 3px; color: #e8e8f4; }
+        .podium-card.pos-3 .podium-team-name { font-size: 1.9em; letter-spacing: 2px; color: #f0d090; }
+
+        .podium-divider {
+            width: 55%; height: 1px;
+            margin: 10px auto;
+            position: relative;
+            z-index: 1;
+        }
+        .podium-card.pos-1 .podium-divider { background: linear-gradient(90deg, transparent, #ffd700, transparent); }
+        .podium-card.pos-2 .podium-divider { background: linear-gradient(90deg, transparent, #a8a8c0, transparent); }
+        .podium-card.pos-3 .podium-divider { background: linear-gradient(90deg, transparent, #cd7f32, transparent); }
+
+        .podium-pts {
+            font-family: 'Teko', sans-serif;
+            font-size: 1.6em;
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 1;
+        }
+        .podium-pts span { font-size: 0.6em; opacity: 0.65; margin-left: 5px; letter-spacing: 2px; }
+        .podium-card.pos-1 .podium-pts { color: #FFD700; font-size: 2em; }
+        .podium-card.pos-2 .podium-pts { color: #C8C8DC; }
+        .podium-card.pos-3 .podium-pts { color: #D49040; }
+
+        /* Podium bases — glowing platforms matching the stage */
+        .podium-base {
+            width: 100%;
+            border-radius: 3px 3px 0 0;
+            transform: scaleY(0);
+            transform-origin: bottom;
+        }
+        .podium-card.visible .podium-base {
+            animation: baseRise 0.7s cubic-bezier(0.22,1,0.36,1) forwards;
+            animation-delay: 0.55s;
+        }
+        .podium-card.pos-1 .podium-base {
+            height: 160px;
+            background: linear-gradient(180deg, #ffe566 0%, #f0a000 40%, #7a5000 100%);
+            box-shadow: 0 -6px 30px rgba(255,210,0,0.7), 0 0 60px rgba(255,160,0,0.3);
+        }
+        .podium-card.pos-2 .podium-base {
+            height: 100px;
+            background: linear-gradient(180deg, #d0d0e0 0%, #9090a8 40%, #484858 100%);
+            box-shadow: 0 -4px 18px rgba(180,180,210,0.4);
+        }
+        .podium-card.pos-3 .podium-base {
+            height: 50px;
+            background: linear-gradient(180deg, #e09040 0%, #a06020 40%, #583010 100%);
+            box-shadow: 0 -4px 15px rgba(205,127,50,0.45);
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Particles -->
+    <div class="bg-particles" id="particles"></div>
+
+    <!-- Podium Overlay (step-by-step reveal) -->
+    <div class="podium-overlay" id="podiumOverlay">
+        <div class="podium-bg-glow"></div>
+        <div class="podium-header">
+            <div class="podium-trophy-icon">🏆</div>
+            <div class="podium-title">FINAL STANDINGS</div>
+            <div class="podium-subtitle">Tournament Champions</div>
+        </div>
+        <div class="podium-stage" id="podiumStage">
+            <!-- 3rd place (left) -->
+            <div class="podium-card pos-3" id="podiumCard3">
+                <div class="podium-card-inner">
+                    <div class="podium-rank-badge">3</div>
+                    <div class="podium-rank-label">3rd Place</div>
+                    <div class="podium-team-name" id="podiumTeam3">—</div>
+                    <div class="podium-divider"></div>
+                    <div class="podium-pts" id="podiumPts3">0<span>PTS</span></div>
+                </div>
+                <div class="podium-base"></div>
+            </div>
+            <!-- 1st place (center, tallest) -->
+            <div class="podium-card pos-1" id="podiumCard1">
+                <div class="podium-card-inner">
+                    <div class="podium-rank-badge">1</div>
+                    <div class="podium-rank-label">Champion</div>
+                    <div class="podium-team-name" id="podiumTeam1">—</div>
+                    <div class="podium-divider"></div>
+                    <div class="podium-pts" id="podiumPts1">0<span>PTS</span></div>
+                </div>
+                <div class="podium-base"></div>
+            </div>
+            <!-- 2nd place (right) -->
+            <div class="podium-card pos-2" id="podiumCard2">
+                <div class="podium-card-inner">
+                    <div class="podium-rank-badge">2</div>
+                    <div class="podium-rank-label">2nd Place</div>
+                    <div class="podium-team-name" id="podiumTeam2">—</div>
+                    <div class="podium-divider"></div>
+                    <div class="podium-pts" id="podiumPts2">0<span>PTS</span></div>
+                </div>
+                <div class="podium-base"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sponsor Banner -->
+    <div class="sponsor-banner" id="sponsorBanner">
+        <div class="sponsor-text">Powered By</div>
+        <div class="sponsor-logo">🎮 BGMI Esports</div>
+    </div>
+
+    <!-- Rankings Locked Indicator -->
+    <div class="locked-indicator" id="lockedIndicator">
+        <span>🔒</span>
+        <span>RANKINGS LOCKED</span>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Leaderboard Section -->
+        <div class="leaderboard-section">
+            <!-- Header -->
+            <div class="header">
+                <h1 class="title">LEADERBOARD</h1>
+                <div class="subtitle">OVERALL STANDING</div>
+            </div>
+
+            <!-- Table Header -->
+            <div class="table-header">
+                <div class="header-cell">#</div>
+                <div class="header-cell">TEAM NAME</div>
+                <div class="header-cell">PLACE PTS.</div>
+                <div class="header-cell">KILLS PTS.</div>
+                <div class="header-cell">TOTAL PTS.</div>
+            </div>
+
+            <!-- Rows Container -->
+            <div class="rows-container" id="leaderboard">
+                <!-- Rows will be generated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Socket.io Client -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Socket.io Connection
+        const socket = io();
+        let tournamentData = [];
+
+        // Placement Points Configuration
+        const PLACEMENT_POINTS = {
+            1: 15, 2: 12, 3: 10, 4: 8, 5: 6, 6: 4, 7: 2
+        };
+
+        // Calculate placement points
+        function getPlacementPoints(placement) {
+            return PLACEMENT_POINTS[placement] || 0;
+        }
+
+        // Calculate total points for a team based on current match selection
+        function calculateTeamStats(team) {
+            let totalPlacePts = 0;
+            let totalKillPts = 0;
+
+            if (currentMatch === 'overall') {
+                // Match 1
+                if (team.match1Placement) {
+                    totalPlacePts += getPlacementPoints(team.match1Placement);
+                }
+                if (team.match1Kills) {
+                    totalKillPts += team.match1Kills;
+                }
+
+                // Match 2
+                if (team.match2Placement) {
+                    totalPlacePts += getPlacementPoints(team.match2Placement);
+                }
+                if (team.match2Kills) {
+                    totalKillPts += team.match2Kills;
+                }
+
+                // Match 3
+                if (team.match3Placement) {
+                    totalPlacePts += getPlacementPoints(team.match3Placement);
+                }
+                if (team.match3Kills) {
+                    totalKillPts += team.match3Kills;
+                }
+            } else if (currentMatch === 'match1') {
+                if (team.match1Placement) {
+                    totalPlacePts = getPlacementPoints(team.match1Placement);
+                }
+                if (team.match1Kills) {
+                    totalKillPts = team.match1Kills;
+                }
+            } else if (currentMatch === 'match2') {
+                if (team.match2Placement) {
+                    totalPlacePts = getPlacementPoints(team.match2Placement);
+                }
+                if (team.match2Kills) {
+                    totalKillPts = team.match2Kills;
+                }
+            } else if (currentMatch === 'match3') {
+                if (team.match3Placement) {
+                    totalPlacePts = getPlacementPoints(team.match3Placement);
+                }
+                if (team.match3Kills) {
+                    totalKillPts = team.match3Kills;
+                }
+            }
+
+            return {
+                placePts: totalPlacePts,
+                killPts: totalKillPts,
+                totalPts: totalPlacePts + totalKillPts
+            };
+        }
+
+        // Create particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const count = 20;
+
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const size = Math.random() * 4 + 1;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.setProperty('--drift', (Math.random() * 200 - 100) + 'px');
+                particle.style.animationDuration = (Math.random() * 15 + 10) + 's';
+                particle.style.animationDelay = Math.random() * 5 + 's';
+                
+                container.appendChild(particle);
+            }
+        }
+
+        // Update subtitle based on current match
+        function updateSubtitle() {
+            const subtitle = document.querySelector('.subtitle');
+            if (!subtitle) return;
+            
+            switch(currentMatch) {
+                case 'match1':
+                    subtitle.textContent = 'MATCH 1 STANDING';
+                    break;
+                case 'match2':
+                    subtitle.textContent = 'MATCH 2 STANDING';
+                    break;
+                case 'match3':
+                    subtitle.textContent = 'MATCH 3 STANDING';
+                    break;
+                case 'overall':
+                default:
+                    subtitle.textContent = 'OVERALL STANDING';
+                    break;
+            }
+        }
+
+        // Render leaderboard
+        function renderLeaderboard(teams = tournamentData) {
+            const container = document.getElementById('leaderboard');
+            container.innerHTML = '';
+
+            if (!teams || teams.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:#fff; padding:40px; font-size:1.5em;">Waiting for data...</div>';
+                return;
+            }
+
+            // Determine how many teams to display
+            let displayCount = teams.length;
+            if (displayMode === 'top3') displayCount = 3;
+            else if (displayMode === 'top7') displayCount = 7;
+            else if (displayMode === 'top15') displayCount = 15;
+            else if (displayMode === 'custom') displayCount = customDisplayCount;
+            
+            // Slice teams array based on display mode
+            const teamsToShow = teams.slice(0, displayCount);
+
+            teamsToShow.forEach((team, index) => {
+                const stats = calculateTeamStats(team);
+                const row = document.createElement('div');
+                row.className = `row rank-${index + 1}`;
+                row.style.animationDelay = `${index * 0.1}s`;
+
+                // Check if this rank should be hidden (reveal mode)
+                const shouldHide = revealedRanks.length > 0 && !revealedRanks.includes(index + 1);
+                
+                if (shouldHide) {
+                    row.style.opacity = '0.3';
+                    row.style.filter = 'blur(5px)';
+                }
+
+                row.innerHTML = `
+                    <div class="rank-box">${index + 1}</div>
+                    <div class="team-box">${team.teamName || 'Unknown Team'}</div>
+                    <div class="stat-box">${stats.placePts}</div>
+                    <div class="stat-box">${stats.killPts}</div>
+                    <div class="stat-box">${stats.totalPts}</div>
+                `;
+
+                container.appendChild(row);
+            });
+
+            // Disable scrolling for top7 and top3 modes
+            if (displayMode === 'top3' || displayMode === 'top7') {
+                container.style.overflowY = 'hidden';
+            } else {
+                container.style.overflowY = 'auto';
+            }
+
+            // Add compact mode class for top7 to fit all rows
+            if (displayMode === 'top7') {
+                container.classList.add('compact-mode');
+                document.querySelector('.leaderboard-section').classList.add('compact-mode');
+                document.querySelector('.table-header').classList.add('compact-mode');
+                document.querySelector('.header').classList.add('compact-mode');
+            } else {
+                container.classList.remove('compact-mode');
+                document.querySelector('.leaderboard-section').classList.remove('compact-mode');
+                document.querySelector('.table-header').classList.remove('compact-mode');
+                document.querySelector('.header').classList.remove('compact-mode');
+            }
+        }
+
+        // Display state
+        let currentMatch = 'overall';
+        let displayMode = 'top15';
+        let customDisplayCount = 15;
+        let revealedRanks = [];
+        let winnersVisible = false;
+
+        // Socket.io Event Listeners
+        socket.on('connect', () => {
+            console.log('✅ Display connected to server');
+        });
+
+        socket.on('initialData', (data) => {
+            console.log('📊 Received initial data:', data);
+            tournamentData = data.teams || [];
+            currentMatch = data.currentMatch || 'overall';
+            displayMode = data.displayMode || 'top15';
+            customDisplayCount = data.customDisplayCount || 15;
+            revealedRanks = data.revealedRanks || [];
+            winnersVisible = data.winnersVisible || false;
+            
+            // Handle sponsor visibility
+            if (data.sponsorVisible) {
+                document.getElementById('sponsorBanner').classList.add('active');
+            }
+            
+            // Handle locked state
+            if (data.locked) {
+                document.getElementById('lockedIndicator').classList.add('active');
+            }
+            
+            // Update subtitle based on match
+            updateSubtitle();
+            
+            // Render on initial load
+            renderLeaderboard(tournamentData);
+            console.log('📺 Display loaded and rendered');
+        });
+
+        // dataUpdate is for control panel only - display uses displayRefresh (manual)
+        socket.on('displayRefresh', (data) => {
+            console.log('🔄 Manual refresh - updating display:', data);
+            
+            tournamentData = data.teams || [];
+            currentMatch = data.currentMatch || currentMatch;
+            displayMode = data.displayMode || displayMode;
+            customDisplayCount = data.customDisplayCount || customDisplayCount;
+            revealedRanks = data.revealedRanks || [];
+            winnersVisible = data.winnersVisible || false;
+            updateSubtitle();
+            renderLeaderboard(tournamentData);
+        });
+
+        socket.on('matchChanged', (match) => {
+            console.log('🎮 Match changed to:', match);
+            currentMatch = match;
+            updateSubtitle();
+            // No auto-update - only manual refresh
+            console.log('🔄 Match change - use manual refresh to update display');
+        });
+
+        socket.on('displayModeChanged', (data) => {
+            console.log('📺 Display mode changed:', data);
+            displayMode = data.mode;
+            if (data.customCount) {
+                customDisplayCount = data.customCount;
+            }
+            // No auto-update - only manual refresh
+            console.log('🔄 Display mode change - use manual refresh to update display');
+        });
+
+        socket.on('revealModeChanged', (mode) => {
+            console.log('Reveal mode changed:', mode);
+            if (mode === 'auto') {
+                revealedRanks = [];
+            }
+            // No auto-update - only manual refresh
+            console.log('🔄 Reveal mode change - use manual refresh to update display');
+        });
+
+        socket.on('rankRevealed', (rank) => {
+            console.log('Rank revealed:', rank);
+            if (!revealedRanks.includes(rank)) {
+                revealedRanks.push(rank);
+            }
+            // No auto-update - only manual refresh
+            console.log('🔄 Rank reveal - use manual refresh to update display');
+        });
+
+        socket.on('revealReset', () => {
+            console.log('Reveal reset');
+            revealedRanks = [];
+            // No auto-update - only manual refresh
+            console.log('🔄 Reveal reset - use manual refresh to update display');
+        });
+
+        socket.on('winnersShown', () => {
+            // legacy - do nothing, use podium instead
+        });
+
+        // Podium setup - show stage/bg, pre-load data, no cards yet
+        socket.on('podiumSetup', (data) => {
+            console.log('🎬 Podium setup received');
+            if (data.teams && data.teams.length > 0) {
+                tournamentData = data.teams;
+            }
+            // Pre-fill card data so it's ready
+            const sorted = [...tournamentData].sort((a, b) => {
+                return calculateTeamStats(b).totalPts - calculateTeamStats(a).totalPts;
+            });
+            [1, 2, 3].forEach(p => {
+                const team = sorted[p - 1];
+                if (!team) return;
+                const stats = calculateTeamStats(team);
+                document.getElementById(`podiumTeam${p}`).textContent = team.teamName || '—';
+                document.getElementById(`podiumPts${p}`).innerHTML = `${stats.totalPts}<span>PTS</span>`;
+            });
+            // Hide all cards, just show the overlay (stage/bg)
+            [1, 2, 3].forEach(p => document.getElementById(`podiumCard${p}`).classList.remove('visible'));
+            document.getElementById('podiumOverlay').classList.add('active');
+        });
+
+        // Podium reveal - step by step
+        socket.on('podiumReveal', (data) => {
+            console.log('🏆 Podium reveal position:', data.position);
+            // Use latest teams from data if provided
+            if (data.teams && data.teams.length > 0) {
+                tournamentData = data.teams;
+            }
+            showPodiumOverlay(data.position);
+        });
+
+        socket.on('allHidden', () => {
+            console.log('All hidden');
+            winnersVisible = false;
+            revealedRanks = [];
+            hidePodiumOverlay();
+            // No auto-update - only manual refresh
+            console.log('🔄 Hide all - use manual refresh to update display');
+        });
+
+        socket.on('rankingsLocked', (locked) => {
+            console.log('Rankings locked:', locked);
+            const lockedIndicator = document.getElementById('lockedIndicator');
+            if (locked) {
+                lockedIndicator.classList.add('active');
+            } else {
+                lockedIndicator.classList.remove('active');
+            }
+        });
+
+        socket.on('sponsorToggled', (visible) => {
+            console.log('Sponsor toggled:', visible);
+            const sponsorBanner = document.getElementById('sponsorBanner');
+            if (visible) {
+                sponsorBanner.classList.add('active');
+            } else {
+                sponsorBanner.classList.remove('active');
+            }
+        });
+
+        socket.on('disconnect', () => {
+            console.log('❌ Disconnected from server');
+        });
+
+        socket.on('connect_error', (error) => {
+            console.error('⚠️ Connection error:', error);
+        });
+
+        function createConfetti() {
+            const overlay = document.getElementById('podiumOverlay');
+            const colors = ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7'];
+            
+            for (let i = 0; i < 60; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                overlay.appendChild(confetti);
+            }
+        }
+
+        function clearConfetti() {
+            const confettiElements = document.querySelectorAll('.confetti');
+            confettiElements.forEach(el => el.remove());
+        }
+
+        // ===== PODIUM FUNCTIONS =====
+        function showPodiumOverlay(position) {
+            if (!tournamentData || tournamentData.length === 0) return;
+
+            // Sort teams by total points
+            const sorted = [...tournamentData].sort((a, b) => {
+                return calculateTeamStats(b).totalPts - calculateTeamStats(a).totalPts;
+            });
+
+            // Fill in all card data (safe to re-fill even after setupPodium)
+            [1, 2, 3].forEach(p => {
+                const team = sorted[p - 1];
+                if (!team) return;
+                const stats = calculateTeamStats(team);
+                document.getElementById(`podiumTeam${p}`).textContent = team.teamName || '—';
+                document.getElementById(`podiumPts${p}`).innerHTML = `${stats.totalPts}<span>PTS</span>`;
+            });
+
+            // Make sure overlay is visible (may already be from setupPodium)
+            document.getElementById('podiumOverlay').classList.add('active');
+
+            // Only remove visibility for cards NOT yet revealed
+            // (don't re-hide already-visible cards on subsequent calls)
+            const newCards = [];
+            if (position <= 3) newCards.push(3);
+            if (position <= 2) newCards.push(2);
+            if (position <= 1) newCards.push(1);
+
+            // Hide cards that shouldn't be shown yet
+            [1, 2, 3].forEach(p => {
+                if (!newCards.includes(p)) {
+                    document.getElementById(`podiumCard${p}`).classList.remove('visible');
+                }
+            });
+
+            // Reveal only the NEW card for this position click
+            // position=3 → only reveal 3rd
+            // position=2 → only reveal 2nd (3rd already visible)
+            // position=1 → only reveal 1st (3rd+2nd already visible)
+            if (position <= 3 && !document.getElementById('podiumCard3').classList.contains('visible')) {
+                setTimeout(() => document.getElementById('podiumCard3').classList.add('visible'), 100);
+            }
+            if (position <= 2 && !document.getElementById('podiumCard2').classList.contains('visible')) {
+                setTimeout(() => document.getElementById('podiumCard2').classList.add('visible'), 200);
+            }
+            if (position <= 1 && !document.getElementById('podiumCard1').classList.contains('visible')) {
+                setTimeout(() => document.getElementById('podiumCard1').classList.add('visible'), 300);
+                setTimeout(() => createConfetti(), 700);
+            }
+        }
+
+        function hidePodiumOverlay() {
+            document.getElementById('podiumOverlay').classList.remove('active');
+            [1, 2, 3].forEach(p => document.getElementById(`podiumCard${p}`).classList.remove('visible'));
+        }
+
+        // Initialize
+        createParticles();
+        renderLeaderboard();
+    </script>
+</body>
+</html>
