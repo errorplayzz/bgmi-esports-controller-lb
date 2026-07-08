@@ -38,6 +38,9 @@ function initializeSocket() {
         isSponsorVisible = data.sponsorVisible || false;
         
         document.getElementById('tournamentName').textContent = data.tournamentName;
+        if (data.googleSheetId && document.getElementById('googleSheetUrlInput')) {
+            document.getElementById('googleSheetUrlInput').value = `https://docs.google.com/spreadsheets/d/${data.googleSheetId}/edit`;
+        }
         
         updateUI();
         updateMiniLeaderboard();
@@ -64,6 +67,19 @@ function initializeSocket() {
                 const now = new Date();
                 el.textContent = `Updated: ${now.toLocaleTimeString()}`;
             }
+        }
+    });
+
+    socket.on('sheetUpdateResult', (result) => {
+        const statusEl = document.getElementById('sheetUpdateStatus');
+        const btn = document.getElementById('connectSheetBtn');
+        if (btn) {
+            btn.textContent = 'Connect';
+            btn.disabled = false;
+        }
+        if (statusEl) {
+            statusEl.textContent = result.message;
+            statusEl.style.color = result.success ? '#00e676' : '#ff5252';
         }
     });
 
@@ -504,6 +520,29 @@ function toggleAutoUpdate() {
         label.style.color = 'var(--accent-red)';
         console.log('⏸️ Auto update paused');
     }
+}
+
+// Connect or update Google Sheet URL live
+function updateGoogleSheetUrl() {
+    const inputEl = document.getElementById('googleSheetUrlInput');
+    const statusEl = document.getElementById('sheetUpdateStatus');
+    const btn = document.getElementById('connectSheetBtn');
+    if (!inputEl || !inputEl.value.trim()) {
+        if (statusEl) {
+            statusEl.textContent = 'Please paste a Google Sheet link or ID first';
+            statusEl.style.color = '#ff5252';
+        }
+        return;
+    }
+    if (btn) {
+        btn.textContent = 'Connecting...';
+        btn.disabled = true;
+    }
+    if (statusEl) {
+        statusEl.textContent = 'Connecting to Google Sheet...';
+        statusEl.style.color = '#ffbb00';
+    }
+    socket.emit('updateGoogleSheetUrl', inputEl.value.trim());
 }
 
 // Initialize socket event handlers on page load

@@ -39,6 +39,17 @@
         <div class="control-content">
             <!-- Left Column: Match & Display Controls -->
             <div class="control-section">
+                <!-- Google Sheet Dynamic Link Section -->
+                <div class="section-card">
+                    <h2>📈 Connect Google Sheet</h2>
+                    <p style="font-size: 13px; color: #bbb; margin-bottom: 12px; line-height: 1.4;">Paste your public Google Sheet link or ID below to fetch live data without touching backend code:</p>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="googleSheetUrlInput" placeholder="https://docs.google.com/spreadsheets/d/your-sheet-id/edit..." style="flex: 1; padding: 10px 12px; border-radius: 6px; border: 1px solid #444; background: #181818; color: #fff; font-size: 13px; outline: none;">
+                        <button class="btn-action btn-green" id="connectSheetBtn" onclick="updateGoogleSheetUrl()" style="padding: 10px 18px; font-weight: bold; cursor: pointer; border: none; border-radius: 6px;">Connect</button>
+                    </div>
+                    <p id="sheetUpdateStatus" style="font-size: 13px; margin-top: 10px; font-weight: 600; min-height: 18px;"></p>
+                </div>
+
                 <div class="section-card">
                     <h2>📊 Match Selector</h2>
                     <div class="button-group">

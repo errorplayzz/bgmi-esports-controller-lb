@@ -52,6 +52,7 @@ let tournamentData = {
   winnersVisible: false,
   locked: false,
   sponsorVisible: false,
+  googleSheetId: process.env.GOOGLE_SHEET_ID || ''
 };
 
 // Sample Data (Replace with Google Sheets data)
@@ -252,12 +253,24 @@ function updateTournamentData() {
 }
 
 /**
+ * Helper to extract Google Sheet ID from URL or raw ID string
+ */
+function extractSheetId(input) {
+  if (!input) return null;
+  input = input.trim();
+  const urlMatch = input.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  if (urlMatch && urlMatch[1]) return urlMatch[1];
+  if (/^[a-zA-Z0-9-_]{20,}$/.test(input)) return input;
+  return input;
+}
+
+/**
  * Fetch data from Google Sheets (CSV export)
  */
 async function fetchFromGoogleSheets() {
   return new Promise((resolve, reject) => {
     try {
-      const sheetId = process.env.GOOGLE_SHEET_ID;
+      const sheetId = tournamentData.googleSheetId || process.env.GOOGLE_SHEET_ID;
       if (!sheetId || sheetId === 'your_google_sheet_id_here') {
         console.log('Using sample data. Configure GOOGLE_SHEET_ID in .env to use real data.');
         resolve(false);
@@ -392,6 +405,7 @@ io.on('connection', (socket) => {
     winnersVisible: tournamentData.winnersVisible,
     locked: tournamentData.locked,
     sponsorVisible: tournamentData.sponsorVisible,
+    googleSheetId: tournamentData.googleSheetId,
     tournamentName: TOURNAMENT_NAME
   });
 
@@ -540,13 +554,35 @@ io.on('connection', (socket) => {
         winnersVisible: tournamentData.winnersVisible,
         locked: tournamentData.locked,
         sponsorVisible: tournamentData.sponsorVisible,
-
+        googleSheetId: tournamentData.googleSheetId,
         tournamentName: TOURNAMENT_NAME
       });
       console.log('✓ Refresh complete - data sent to client');
     } catch (error) {
       console.error('❌ Error during refresh:', error);
       socket.emit('refreshError', { message: 'Failed to refresh data' });
+    }
+  });
+
+  // Dynamic Google Sheet URL/ID update from Control Panel
+  socket.on('updateGoogleSheetUrl', async (inputUrl) => {
+    console.log('🔗 Updating Google Sheet Link:', inputUrl);
+    const extractedId = extractSheetId(inputUrl);
+    if (!extractedId) {
+      socket.emit('sheetUpdateResult', { success: false, message: 'Invalid Google Sheet Link or ID' });
+      return;
+    }
+    tournamentData.googleSheetId = extractedId;
+    try {
+      const success = await fetchFromGoogleSheets();
+      if (success) {
+        socket.emit('sheetUpdateResult', { success: true, message: '✓ Google Sheet connected & leaderboard updated!' });
+      } else {
+        socket.emit('sheetUpdateResult', { success: false, message: 'Could not fetch data. Ensure Sheet is Public (Anyone with link -> Viewer)' });
+      }
+    } catch (err) {
+      console.error('❌ Error updating Google Sheet:', err.message);
+      socket.emit('sheetUpdateResult', { success: false, message: err.message || 'Failed to connect to Google Sheet' });
     }
   });
 

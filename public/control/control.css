@@ -760,3 +760,9 @@ input:checked + .toggle-slider-small:before {
         grid-template-columns: 1fr;
     }
 }
+
+/* Google Sheet Input Styling */
+#googleSheetUrlInput:focus {
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
